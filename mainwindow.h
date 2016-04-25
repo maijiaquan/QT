@@ -19,14 +19,22 @@ public:
 
     void paintEvent(QPaintEvent *);
     void keyPressEvent(QKeyEvent *);
+
+    void moveTail();
 private:
     Ui::MainWindow *ui;
-    int a[15][15];
+
 
     struct snake{
         int x;
         int y;
-    }s1;
+        snake *next;
+    }*head;
+
+//    int first_x;
+//    int first_y;
+//    int second_x;
+//    int second_y;
 };
 
 #endif // MAINWINDOW_H
