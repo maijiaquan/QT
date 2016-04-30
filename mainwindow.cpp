@@ -3,6 +3,8 @@
 #include<QPainter>
 #include<QKeyEvent>
 #include<iostream>
+
+
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -50,8 +52,10 @@ MainWindow::MainWindow(QWidget *parent) :
     s3->y = s2->y;
     s3->next = NULL;
 
+    startTimer(200);  //定时器
+
+
     ////////////////////////
-    
     ui->setupUi(this);
     resize(640, 640);
 }
@@ -252,6 +256,7 @@ int MainWindow::foodAhead(){
     else return -1;
 }
 
+
 void MainWindow::eat(){
     cout<<"eat"<<endl;
     snake *temp = new snake;
@@ -259,4 +264,11 @@ void MainWindow::eat(){
     temp->y = food->y;
     temp->next = head;
     head = temp;
+}
+
+
+void MainWindow::timerEvent(QTimerEvent *t)//定时器时间
+{
+    moveSnake();
+    update();
 }
