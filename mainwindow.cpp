@@ -3,12 +3,19 @@
 #include<QPainter>
 #include<QKeyEvent>
 #include<iostream>
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#define random(x) (rand()%x)
+
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    isPause = false;
+
     /*初始化方向*/
     DIR_RIGHT = 1;
     DIR_LEFT = 2;
@@ -24,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     food->next = NULL;
 
     /*初始化全局变量*/
-    LINE_WIDTH = 40;   //设置线宽
+    LINE_WIDTH = 20;   //设置线宽
+    LINE_NUMBER = 31;
 
     /*默认游戏开始时就存在的蛇*/
     head->x = 0;
@@ -50,8 +58,10 @@ MainWindow::MainWindow(QWidget *parent) :
     s3->y = s2->y;
     s3->next = NULL;
 
+    startTimer(50);  //定时器
+
+
     ////////////////////////
-    
     ui->setupUi(this);
     resize(640, 640);
 }
@@ -64,13 +74,12 @@ MainWindow::~MainWindow()
 //////////////////////////////////////
 void MainWindow::paintEvent(QPaintEvent *)
 {
-
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
 
 
     /*画背景网格线*/
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < LINE_NUMBER; i++)
     {
         p.drawLine(20, 20 + i * LINE_WIDTH, 620, 20 + i * LINE_WIDTH);
         p.drawLine(20 + i * LINE_WIDTH, 20, 20 + i * LINE_WIDTH, 620);
@@ -118,57 +127,63 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 
     if(keyValue == Qt::Key_0){
-        moveSnake();
+        isPause = true;
     }
+
+    if(keyValue == Qt::Key_1){
+        isPause = false;
+    }
+
     cout<<head->x<<" "<<head->y<<endl;
     update();
 }
 
 void MainWindow::moveSnake(){
-    if(CURR_DIR == DIR_DOWN){
-        if(foodAhead() == DIR_DOWN){
-            cout<<foodAhead()<<"DIR_DOWN"<<endl;
-            eat();
+    if(!isPause){
+        if(CURR_DIR == DIR_DOWN){
+            if(foodAhead() == DIR_DOWN){
+                cout<<foodAhead()<<"DIR_DOWN"<<endl;
+                eat();
+            }
+            else{
+                head->y += 1;
+                moveTail(DIR_DOWN);
+            }
         }
-        else{
-            head->y += 1;
-            moveTail(DIR_DOWN);
+
+        if(CURR_DIR == DIR_LEFT){
+            if(foodAhead() == DIR_LEFT){
+                cout<<foodAhead()<<"DIR_LEFT"<<endl;
+                eat();
+            }
+            else{
+                head->x -= 1;     //要写成函数走一步，
+                moveTail(DIR_LEFT);
+            }
+        }
+
+        if(CURR_DIR == DIR_RIGHT){
+            if(foodAhead() == DIR_RIGHT){
+                cout<<foodAhead()<<"DIR_RIGHT"<<endl;
+                eat();
+            }
+            else{
+                head->x += 1;
+                moveTail(DIR_RIGHT);
+            }
+        }
+
+        if(CURR_DIR == DIR_UP){
+            if(foodAhead() == DIR_UP){
+                eat();
+                cout<<foodAhead()<<"DIR_UP"<<endl;
+            }
+            else{
+                head->y -= 1;
+                moveTail(DIR_UP);
+            }
         }
     }
-
-    if(CURR_DIR == DIR_LEFT){
-        if(foodAhead() == DIR_LEFT){
-            cout<<foodAhead()<<"DIR_LEFT"<<endl;
-            eat();
-        }
-        else{
-        head->x -= 1;     //要写成函数走一步，
-        moveTail(DIR_LEFT);
-        }
-    }
-
-    if(CURR_DIR == DIR_RIGHT){
-        if(foodAhead() == DIR_RIGHT){
-            cout<<foodAhead()<<"DIR_RIGHT"<<endl;
-            eat();
-        }
-        else{
-        head->x += 1;
-        moveTail(DIR_RIGHT);
-        }
-    }
-
-    if(CURR_DIR == DIR_UP){
-        if(foodAhead() == DIR_UP){
-            eat();
-            cout<<foodAhead()<<"DIR_UP"<<endl;
-        }
-        else{
-        head->y -= 1;
-        moveTail(DIR_UP);
-        }
-    }
-
 }
 
 /*移动蛇的尾部*/
@@ -259,4 +274,31 @@ void MainWindow::eat(){
     temp->y = food->y;
     temp->next = head;
     head = temp;
+
+    resetFood();
+}
+
+void MainWindow::timerEvent(QTimerEvent *t)//定时器时间
+{
+    moveSnake();
+    update();
+    cout<<"score = "<<score()<<endl;
+}
+
+int MainWindow::score(){
+    snake *temp = new snake;
+    temp = head;
+    int i = 0;
+    while(temp != NULL){
+        i++;
+        temp = temp->next;
+    }
+    return i;
+}
+
+void MainWindow::resetFood(){
+    srand((int)time(0));
+    food->x = random(LINE_NUMBER - 1);
+    srand((int)time(0));
+    food->y = random(LINE_NUMBER - 1);
 }
