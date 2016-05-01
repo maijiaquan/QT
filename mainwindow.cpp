@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     head->x = 0;
     head->y = 0;
 
+
     snake *s1 = new snake;
 
     head->next = s1;
